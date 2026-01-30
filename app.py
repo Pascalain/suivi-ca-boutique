@@ -23,7 +23,36 @@ if st.session_state["password"] != "Boutique2025":
         st.rerun()
     st.stop()
 
-# --- BARRE LATÉRALE (FILTRES) ---
+# --- LOGIQUE DES MOIS ---
+def semaine_en_mois(s, annee):
+    if annee == 2026:
+        if s <= 5: return "Janvier"
+        if s <= 9: return "Février"
+        if s <= 13: return "Mars"
+        if s <= 18: return "Avril"
+        if s <= 22: return "Mai"
+        if s <= 26: return "Juin"
+        if s <= 31: return "Juillet"
+        if s <= 35: return "Août"
+        if s <= 40: return "Septembre"
+        if s <= 44: return "Octobre"
+        if s <= 48: return "Novembre"
+        return "Décembre"
+    else: # 2024 / 2025
+        if s <= 5: return "Janvier"
+        if s <= 9: return "Février"
+        if s <= 13: return "Mars"
+        if s <= 17: return "Avril"
+        if s <= 21: return "Mai"
+        if s <= 26: return "Juin"
+        if s <= 30: return "Juillet"
+        if s <= 35: return "Août"
+        if s <= 39: return "Septembre"
+        if s <= 44: return "Octobre"
+        if s <= 48: return "Novembre"
+        return "Décembre"
+
+# --- BARRE LATÉRALE ---
 st.sidebar.markdown("### 🔍 FILTRES")
 pv = st.sidebar.selectbox("Choisir le Point de Vente", ["Les Halles", "Le Magasin"])
 prod = st.sidebar.selectbox("Produit", ["Pascalain", "Tripes & Cie"])
@@ -36,8 +65,7 @@ if not df.empty:
     df_filtre = df[(df['PointDeVente'] == pv) & (df['Produit'] == prod)].copy()
     
     if not df_filtre.empty:
-        # --- CALCULS INDICATEURS (KPI) ---
-        # On cherche les données pour la semaine choisie
+        # --- INDICATEURS (KPI) ---
         ca_2025 = df_filtre[(df_filtre['Annee'] == 2025) & (df_filtre['Semaine'] == semaine_analyse)]['CA'].sum()
         ca_2024 = df_filtre[(df_filtre['Annee'] == 2024) & (df_filtre['Semaine'] == semaine_analyse)]['CA'].sum()
         ecart = ca_2025 - ca_2024
@@ -57,16 +85,25 @@ if not df.empty:
                      color_discrete_map={2024: "grey", 2025: "#0077b6"})
         st.plotly_chart(fig, use_container_width=True)
 
+        # --- TABLEAU RÉCAPITULATIF (RÉINSÉRÉ ICI) ---
+        st.subheader("🗓️ Récapitulatif Mensuel")
+        df_filtre['Mois'] = df_filtre.apply(lambda x: semaine_en_mois(x['Semaine'], x['Annee']), axis=1)
+        ordre_mois = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+        
+        recap = df_filtre.groupby(['Mois', 'Annee'])['CA'].sum().unstack().fillna(0)
+        recap = recap.reindex(ordre_mois).dropna(how='all')
+        st.table(recap.style.format("{:.2f} €"))
+
 st.divider()
 
-# --- LES ONGLETS (TABS) COMME SUR VOTRE PHOTO ---
+# --- LES ONGLETS (TABS) ---
 tab1, tab2, tab3 = st.tabs(["➕ Saisir", "🗑️ Supprimer", "🏪 Magasin"])
 
 with tab1:
     with st.form("form_saisie", clear_on_submit=True):
         c1, c2, c3 = st.columns(3)
         s_i = c1.number_input("Semaine", 1, 53, value=semaine_analyse)
-        a_i = col2.selectbox("Année", [2024, 2025, 2026], index=1)
+        a_i = c2.selectbox("Année", [2024, 2025, 2026], index=1)
         ca_i = c3.number_input("Montant (€)", min_value=0.0)
         if st.form_submit_button("Enregistrer"):
             new_line = pd.DataFrame([{"Semaine": int(s_i), "Annee": int(a_i), "PointDeVente": pv, "Produit": prod, "CA": float(ca_i)}])
@@ -77,7 +114,7 @@ with tab1:
             st.rerun()
 
 with tab2:
-    st.write("Supprimer la dernière entrée pour ce magasin.")
+    st.write("Supprimer la dernière ligne du tableau.")
     if st.button("Confirmer la suppression"):
         df_final = df.drop(df.index[-1])
         conn.update(spreadsheet=url, data=df_final)
@@ -86,5 +123,4 @@ with tab2:
         st.rerun()
 
 with tab3:
-    st.write("Configuration des points de vente.")
-    st.info("Cette section est en cours de développement.")
+    st.info("Configuration des magasins.")
