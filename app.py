@@ -22,20 +22,48 @@ if st.session_state["password"] != "Boutique2025":
         st.rerun()
     st.stop()
 
-# --- LOGIQUE DES MOIS ---
+# --- DÉCOUPAGE PRÉCIS DES SEMAINES (2024 / 2025 / 2026) ---
 def semaine_en_mois(s, annee):
-    if s <= 5: return "Janvier"
-    if s <= 9: return "Février"
-    if s <= 13: return "Mars"
-    if s <= 17: return "Avril"
-    if s <= 21: return "Mai"
-    if s <= 26: return "Juin"
-    if s <= 30: return "Juillet"
-    if s <= 35: return "Août"
-    if s <= 39: return "Septembre"
-    if s <= 44: return "Octobre"
-    if s <= 48: return "Novembre"
-    return "Décembre"
+    if annee == 2024:
+        if s <= 4: return "Janvier"
+        if s <= 8: return "Février"
+        if s <= 13: return "Mars"
+        if s <= 17: return "Avril"  # Ajustement spécifique 2024
+        if s <= 22: return "Mai"
+        if s <= 26: return "Juin"
+        if s <= 30: return "Juillet"
+        if s <= 35: return "Août"
+        if s <= 39: return "Septembre"
+        if s <= 43: return "Octobre"
+        if s <= 48: return "Novembre"
+        return "Décembre"
+    elif annee == 2026:
+        # Découpage spécifique 2026
+        if s <= 5: return "Janvier"
+        if s <= 9: return "Février"
+        if s <= 13: return "Mars"
+        if s <= 18: return "Avril"
+        if s <= 22: return "Mai"
+        if s <= 26: return "Juin"
+        if s <= 31: return "Juillet"
+        if s <= 35: return "Août"
+        if s <= 40: return "Septembre"
+        if s <= 44: return "Octobre"
+        if s <= 48: return "Novembre"
+        return "Décembre"
+    else: # Par défaut (2025)
+        if s <= 5: return "Janvier"
+        if s <= 9: return "Février"
+        if s <= 13: return "Mars"
+        if s <= 18: return "Avril"
+        if s <= 22: return "Mai"
+        if s <= 26: return "Juin"
+        if s <= 31: return "Juillet"
+        if s <= 35: return "Août"
+        if s <= 39: return "Septembre"
+        if s <= 44: return "Octobre"
+        if s <= 48: return "Novembre"
+        return "Décembre"
 
 # --- RÉCUPÉRATION DYNAMIQUE DES MAGASINS ---
 if not df.empty and 'PointDeVente' in df.columns:
