@@ -150,13 +150,32 @@ with tab1:
             st.rerun()
 
 with tab2:
-    if st.button("❌ Supprimer la toute dernière ligne du tableau"):
-        df_final = df.drop(df.index[-1])
-        conn.update(data=df_final)
-        st.success("Ligne supprimée !")
-        st.cache_data.clear()
-        st.rerun()
-
+ st.subheader("🗑️ Supprimer une saisie spécifique")
+    col_s1, col_s2 = st.columns(2)
+    s_del = col_s1.number_input("Semaine de l'erreur", 1, 53, value=semaine_analyse, key="s_del")
+    a_del = col_s2.selectbox("Année de l'erreur", [2024, 2025, 2026], index=2, key="a_del")
+    
+    # On cherche les lignes correspondantes dans le DF global (df)
+    lignes_trouvees = df[
+        (df['PointDeVente'] == pv) & 
+        (df['Produit'] == prod) & 
+        (df['Semaine'] == s_del) & 
+        (df['Annee'] == a_del)
+    ]
+    
+    if not lignes_trouvees.empty:
+        st.write("Saisies trouvées pour cette période :")
+        for idx, row in lignes_trouvees.iterrows():
+            col_info, col_btn = st.columns([3, 1])
+            col_info.write(f"📍 {row['PointDeVente']} | 📦 {row['Produit']} | 📅 Sem {row['Semaine']} - {row['Annee']} | 💰 **{row['CA']} €**")
+            if col_btn.button("Supprimer", key=f"btn_{idx}"):
+                df_final = df.drop(idx)
+                conn.update(data=df_final)
+                st.success("Ligne supprimée !")
+                st.cache_data.clear()
+                st.rerun()
+    else:
+        st.info("Aucune donnée trouvée pour cette semaine/année sur ce magasin.")   
 with tab3:
     st.subheader("Ajouter un nouveau point de vente")
     with st.form("nouveau_pdv"):
