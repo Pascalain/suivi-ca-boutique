@@ -128,16 +128,33 @@ st.divider()
 tab1, tab2, tab3 = st.tabs(["➕ Saisir", "🗑️ Supprimer", "🏪 Nouveau Magasin"])
 
 with tab1:
-    with st.form("saisie_ca", clear_on_submit=True):
+   with tab1:
+    # On initialise les mémoires de saisie si elles n'existent pas
+    if "last_semaine" not in st.session_state:
+        st.session_state.last_semaine = semaine_analyse
+    if "last_annee" not in st.session_state:
+        st.session_state.last_annee = annee_n
+
+    with st.form("saisie_ca", clear_on_submit=False): # clear_on_submit=False pour garder les chiffres
         col1, col2, col3 = st.columns(3)
-        s_i = col1.number_input("Semaine", 1, 53, value=semaine_analyse)
-        a_i = col2.selectbox("Année de saisie", [2024, 2025, 2026], index=2)
+        
+        # On utilise les valeurs gardées en mémoire
+        s_i = col1.number_input("Semaine", 1, 53, value=st.session_state.last_semaine)
+        a_i = col2.selectbox("Année de saisie", [2024, 2025, 2026], 
+                             index=[2024, 2025, 2026].index(st.session_state.last_annee))
         ca_i = col3.number_input("Montant (€)", min_value=0.0)
+        
         if st.form_submit_button("Enregistrer le chiffre"):
+            # Enregistrement
             new_line = pd.DataFrame([{"Semaine": int(s_i), "Annee": int(a_i), "PointDeVente": pv, "Produit": prod, "CA": float(ca_i)}])
             df_updated = pd.concat([df, new_line], ignore_index=True)
             conn.update(data=df_updated)
-            st.success("✅ Donnée enregistrée !")
+            
+            # ON GARDE EN MÉMOIRE ce qu'on vient de saisir avant de relancer
+            st.session_state.last_semaine = int(s_i)
+            st.session_state.last_annee = int(a_i)
+            
+            st.success(f"✅ Semaine {s_i} ({a_i}) enregistrée !")
             st.cache_data.clear()
             st.rerun()
 
