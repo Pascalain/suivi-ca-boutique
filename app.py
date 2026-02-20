@@ -54,7 +54,7 @@ def semaine_en_mois(s, annee):
         if s <= 5: return "Janvier"
         if s <= 9: return "Février"
         if s <= 13: return "Mars"
-        if s <= 18: return "Avril"
+        if s <= 17: return "Avril"
         if s <= 22: return "Mai"
         if s <= 26: return "Juin"
         if s <= 31: return "Juillet"
